@@ -1,3 +1,5 @@
+![PetThreat — Know when to ease off.](media/banner.png)
+
 # PetThreat
 
 A small hunter addon that shows your threat above or below enemy nameplates and warns before you pull aggro from your pet.
@@ -24,3 +26,6 @@ Use /petthreat debug during combat and report the output with your client versio
 
 ## Validation
 Offline Lua 5.1 checks cover threat classification, restricted-data handling, target aliases, client gates, settings, update interval and minimap controls. In-game multi-target and cross-client testing is still needed.
+
+## CurseForge
+[PetThreat on CurseForge](https://www.curseforge.com/wow/addons/petthreat) (new project; availability depends on moderation approval).
