@@ -1,0 +1,9 @@
+## Interface: 11509, 20506, 30405, 38002, 40402, 50504, 16001
+## Title: PetThreat
+## Notes: Simple hunter pet threat on enemy nameplates. /petthreat
+## Author: Markus
+## Version: 0.3.1-beta
+## SavedVariablesPerCharacter: PetThreatDB
+Core.lua
+Settings.lua
+PetThreat.lua
