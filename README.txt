@@ -1,4 +1,4 @@
-PetThreat 0.3.1 beta
+PetThreat 0.3.2 beta
 
 A small hunter-only addon. Simple settings window and minimap button; no libraries
 or damage meter.
@@ -59,6 +59,13 @@ data immediately. This improves display responsiveness, not server data accuracy
 sections, standard WoW buttons and a more compact preview. The minimap icon now
 uses a circular alpha mask with Blizzard's tracking-button rim. Existing saved
 settings and the 20 Hz threat updates are preserved.
+
+0.3.2: Display protected threat percentages through Blizzard's permitted
+FontString:SetFormattedText path instead of discarding them. Light-blue numbers
+are display-only: the custom warning threshold cannot be calculated from these
+protected values. Readable threat values keep their normal colors and warnings.
+If the API returns no percentage at all, the unavailable message remains.
+This fixes a code limitation but still needs in-game multi-enemy verification.
 
 COMPATIBILITY AND LIMITS
 Targets Blizzard's modern Classic clients: Era/Hardcore/SoD, TBC Anniversary,

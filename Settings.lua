@@ -142,7 +142,7 @@ function A.CreateSettings()
     checkbox(panel, 'Play warning sound', -478, 'sound')
     button(panel, 'Test display', 24, -516, 200, function() panel:Hide(); A.Command('test') end)
     button(panel, 'Reset settings', 236, -516, 200, function() A.Command('reset') end)
-    text(panel, '100% = pull aggro  |  Grey = no percentage available', 26, -555, 'GameFontHighlightSmall')
+    text(panel, 'Blue = display only  |  Grey = no percentage available', 26, -555, 'GameFontHighlightSmall')
     panel:Hide()
 
     minimap = CreateFrame('Button', 'PetThreatMinimapButton', Minimap)

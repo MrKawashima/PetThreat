@@ -62,8 +62,14 @@ local function draw(entry, unit, text, level)
     end
     label:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF', db.size, 'OUTLINE')
     label:SetText(text)
+    local restrictedDisplay = false
+    if text == 'Threat unavailable' or text == 'Pet tanking - no %' then
+        restrictedDisplay = A.DisplayRestrictedPercent(label, unit)
+        if not restrictedDisplay then label:SetText(text) end
+    end
     if level == 2 then label:SetTextColor(1, 0.2, 0.2)
     elseif level == 1 then label:SetTextColor(1, 0.65, 0.1)
+    elseif restrictedDisplay then label:SetTextColor(0.55, 0.8, 1)
     elseif text == 'Threat unavailable' or text == 'Pet tanking - no %' then label:SetTextColor(0.7, 0.7, 0.7)
     else label:SetTextColor(0.4, 1, 0.4) end
     label:Show()
@@ -104,7 +110,7 @@ local function slash(message)
     local command, value = message:lower():match('^%s*(%S*)%s*(.-)%s*$')
     local n = tonumber(value)
     if command == 'debug' then
-        say('v0.3.1 | Build: ' .. A.Describe(GetBuildInfo))
+        say('v0.3.2 | Build: ' .. A.Describe(GetBuildInfo))
         say('Target player [tanking,status,scaled%,raw%,threat]: ' .. A.Describe(UnitDetailedThreatSituation, 'player', 'target'))
         say('Target pet: ' .. A.Describe(UnitDetailedThreatSituation, 'pet', 'target'))
         say('Status player / pet: ' .. A.Describe(UnitThreatSituation, 'player', 'target') .. ' / ' .. A.Describe(UnitThreatSituation, 'pet', 'target'))

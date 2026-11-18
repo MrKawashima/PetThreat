@@ -14,6 +14,21 @@ function A.Call(fn, ...)
     end)
     if ok then return unpack(result, 1, result.n) end
 end
+-- Blizzard explicitly permits secret arguments to FontString:SetFormattedText.
+-- This path only displays the live value; Lua never compares or formats it.
+-- Reference: Blizzard_APIDocumentationGenerated/SimpleFontStringAPIDocumentation.lua
+function A.DisplayRestrictedPercent(label, unit)
+    if type(UnitDetailedThreatSituation) ~= 'function' or type(issecretvalue) ~= 'function' then return false end
+    local ok, displayed = pcall(function()
+        local _, _, percent = UnitDetailedThreatSituation('player', unit)
+        if issecretvalue(percent) then
+            label:SetFormattedText('%.1f%% threat', percent)
+            return true
+        end
+        return false
+    end)
+    return ok and displayed == true
+end
 function A.Describe(fn, ...)
     if type(fn) ~= 'function' then return 'API missing' end
     local args = pack(...)

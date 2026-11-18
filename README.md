@@ -29,3 +29,6 @@ Offline Lua 5.1 checks cover threat classification, restricted-data handling, ta
 
 ## CurseForge
 [PetThreat on CurseForge](https://www.curseforge.com/wow/addons/petthreat) (new project; availability depends on moderation approval).
+
+## 0.3.2 Beta
+Non-selected nameplates can now pass protected threat percentages directly to the game text renderer where supported. Blue percentages are display-only: protected values cannot be used for numerical warning thresholds. Missing data still uses the grey fallback. Offline regression checks pass; this change still needs in-game multi-target verification.
