@@ -5,11 +5,10 @@ local function bordered(parent, width, height, x, y)
     local f = CreateFrame('Frame', nil, parent, 'BackdropTemplate')
     f:SetSize(width, height)
     f:SetPoint('TOPLEFT', parent, 'TOPLEFT', x, y)
-    f:SetBackdrop({bgFile='Interface\\DialogFrame\\UI-DialogBox-Background',
-        edgeFile='Interface\\Tooltips\\UI-Tooltip-Border', tile=true, tileSize=16, edgeSize=16,
-        insets={left=4,right=4,top=4,bottom=4}})
-    f:SetBackdropColor(0.10, 0.14, 0.10, 0.95)
-    f:SetBackdropBorderColor(0.48, 0.42, 0.26)
+    f:SetBackdrop({bgFile='Interface\\Buttons\\WHITE8X8', edgeFile='Interface\\Buttons\\WHITE8X8',
+        edgeSize=1, insets={left=1,right=1,top=1,bottom=1}})
+    f:SetBackdropColor(0.05, 0.075, 0.09, 0.98)
+    f:SetBackdropBorderColor(0.18, 0.26, 0.29, 1)
     -- Decorative panels must remain behind controls and labels.
     f:SetFrameLevel(parent:GetFrameLevel())
     return f
@@ -39,11 +38,26 @@ local function text(parent, content, x, y, font)
     label:SetText(content)
     return label
 end
+-- Match the dark controls and teal selection used by WhatsNext.
 local function button(parent, title, x, y, width, action)
-    local b = CreateFrame('Button', nil, parent, 'UIPanelButtonTemplate')
+    local b = CreateFrame('Button', nil, parent, 'BackdropTemplate')
     b:SetSize(width, 25)
     b:SetPoint('TOPLEFT', parent, 'TOPLEFT', x, y)
-    b:SetText(title)
+    b:SetBackdrop({bgFile='Interface\\Buttons\\WHITE8X8', edgeFile='Interface\\Buttons\\WHITE8X8',
+        edgeSize=1, insets={left=1,right=1,top=1,bottom=1}})
+    local caption = b:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    caption:SetPoint('CENTER'); caption:SetWidth(width - 6)
+    b.SetText = function(self, value) self.text = value; caption:SetText(value) end
+    local function paint(self, hover)
+        local selected = self.selected or hover
+        self:SetBackdropColor(selected and 0.12 or 0.08, selected and 0.23 or 0.13, selected and 0.25 or 0.16, 1)
+        self:SetBackdropBorderColor(selected and 0.38 or 0.23, selected and 0.85 or 0.36, selected and 0.69 or 0.39, 1)
+        caption:SetTextColor(selected and 0.70 or 0.87, selected and 1 or 0.92, selected and 0.85 or 0.94)
+    end
+    b.SetSelected = function(self, value) self.selected = value; paint(self, false) end
+    b:SetScript('OnEnter', function(self) paint(self, true) end)
+    b:SetScript('OnLeave', function(self) paint(self, false) end)
+    b:SetText(title); b:SetSelected(false)
     b:SetScript('OnClick', action)
     return b
 end
@@ -54,7 +68,7 @@ local function checkbox(parent, title, y, key)
     text(parent, title, 48, y - 6)
     b:SetScript('OnClick', function(self)
         if key == 'enabled' then A.Command(self:GetChecked() and 'on' or 'off')
-        else A.Command('sound ' .. (self:GetChecked() and 'on' or 'off')) end
+        else A.Command((key == 'screenWarning' and 'screenwarning ' or 'sound ') .. (self:GetChecked() and 'on' or 'off')) end
     end)
     labels[key] = b
 end
@@ -79,8 +93,9 @@ function A.RefreshSettings()
     labels.size:SetText(A.db.size)
     labels.enabled:SetChecked(A.db.enabled)
     labels.sound:SetChecked(A.db.sound)
-    labels.above:SetText(A.db.position == 'above' and '|cff9dff70Above  [selected]|r' or 'Above')
-    labels.below:SetText(A.db.position == 'below' and '|cff9dff70Below  [selected]|r' or 'Below')
+    labels.screenWarning:SetChecked(A.db.screenWarning)
+    labels.above:SetSelected(A.db.position == 'above')
+    labels.below:SetSelected(A.db.position == 'below')
     local preview = labels.preview
     preview:ClearAllPoints()
     preview:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF', A.db.size, 'OUTLINE')
@@ -99,7 +114,7 @@ end
 function A.CreateSettings()
     if panel then return end
     panel = CreateFrame('Frame', 'PetThreatSettings', UIParent, 'BackdropTemplate')
-    panel:SetSize(460, 580)
+    panel:SetSize(460, 610)
     panel:SetPoint('CENTER')
     panel:SetFrameStrata('DIALOG')
     panel:SetClampedToScreen(true)
@@ -108,19 +123,18 @@ function A.CreateSettings()
     panel:RegisterForDrag('LeftButton')
     panel:SetScript('OnDragStart', function(self) self:StartMoving() end)
     panel:SetScript('OnDragStop', function(self) self:StopMovingOrSizing() end)
-    panel:SetBackdrop({bgFile='Interface\\DialogFrame\\UI-DialogBox-Background',
-        edgeFile='Interface\\DialogFrame\\UI-DialogBox-Border', tile=true,tileSize=32,edgeSize=32,
-        insets={left=11,right=12,top=12,bottom=11}})
-    panel:SetBackdropColor(0.65, 0.72, 0.62, 1)
+    panel:SetBackdrop({bgFile='Interface\\Buttons\\WHITE8X8', edgeFile='Interface\\Buttons\\WHITE8X8',
+        edgeSize=1, insets={left=1,right=1,top=1,bottom=1}})
+    panel:SetBackdropColor(0.035, 0.055, 0.07, 0.98)
+    panel:SetBackdropBorderColor(0.18, 0.26, 0.29, 1)
+    fill(panel, 1, -1, 458, 3, 0.38, 0.85, 0.69)
     roundIcon(panel, 38, 25, -24)
-    text(panel, 'PetThreat', 76, -25, 'GameFontNormalLarge')
-    text(panel, 'HUNTER COMPANION', 77, -48, 'GameFontHighlightSmall'):SetTextColor(0.65, 0.78, 0.55)
-    local close = CreateFrame('Button', nil, panel, 'UIPanelCloseButton')
-    close:SetPoint('TOPRIGHT', panel, 'TOPRIGHT', -6, -6)
-    close:SetScript('OnClick', function() panel:Hide() end)
+    text(panel, 'PetThreat', 76, -25, 'GameFontNormalLarge'):SetTextColor(0.38, 0.85, 0.69)
+    text(panel, 'HUNTER COMPANION', 77, -48, 'GameFontHighlightSmall'):SetTextColor(0.65, 0.75, 0.80)
+    button(panel, 'X', 414, -16, 28, function() panel:Hide() end)
     UISpecialFrames[#UISpecialFrames + 1] = 'PetThreatSettings'
     bordered(panel, 420, 160, 20, -78)
-    text(panel, 'Nameplate preview', 34, -91, 'GameFontNormal')
+    text(panel, 'Nameplate preview', 34, -91, 'GameFontNormal'):SetTextColor(0.38, 0.85, 0.69)
     labels.bar = CreateFrame('Frame', nil, panel)
     labels.bar:SetSize(250, 17); labels.bar:SetPoint('TOPLEFT', panel, 'TOPLEFT', 105, -151)
     labels.bar:SetFrameLevel(panel:GetFrameLevel() + 1)
@@ -132,6 +146,7 @@ function A.CreateSettings()
     labels.preview = panel:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
     button(panel, 'Cycle preview', 165, -202, 130, function() previewMode = previewMode % 3 + 1; A.RefreshSettings() end)
     labels.position = text(panel, '', 26, -253, 'GameFontNormal')
+    labels.position:SetTextColor(0.65, 0.80, 0.85)
     labels.above = button(panel, 'Above', 24, -276, 200, function() A.Command('above') end)
     labels.below = button(panel, 'Below', 236, -276, 200, function() A.Command('below') end)
     bordered(panel, 420, 124, 20, -314)
@@ -140,9 +155,10 @@ function A.CreateSettings()
     stepper(panel, 'Distance from bar', -402, 'gap', 0, 60)
     checkbox(panel, 'Enable pet threat', -449, 'enabled')
     checkbox(panel, 'Play warning sound', -478, 'sound')
-    button(panel, 'Test display', 24, -516, 200, function() panel:Hide(); A.Command('test') end)
-    button(panel, 'Reset settings', 236, -516, 200, function() A.Command('reset') end)
-    text(panel, 'Blue = display only  |  Grey = no percentage available', 26, -555, 'GameFontHighlightSmall')
+    checkbox(panel, 'Show center-screen warning', -507, 'screenWarning')
+    button(panel, 'Test display', 24, -546, 200, function() panel:Hide(); A.Command('test') end)
+    button(panel, 'Reset settings', 236, -546, 200, function() A.Command('reset') end)
+    text(panel, 'Blue = display only  |  Grey = no percentage available', 26, -585, 'GameFontHighlightSmall')
     panel:Hide()
 
     minimap = CreateFrame('Button', 'PetThreatMinimapButton', Minimap)

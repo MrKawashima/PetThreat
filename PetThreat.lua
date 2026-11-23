@@ -1,6 +1,6 @@
 local _, A = ...
 local call = A.Call
-local defaults = { position = 'below', gap = 4, size = 13, warn = 85, sound = true, enabled = true, minimapAngle = 220 }
+local defaults = { position = 'below', gap = 4, size = 13, warn = 85, sound = true, screenWarning = false, enabled = true, minimapAngle = 220 }
 local plates, db, ready, demoUntil = {}, nil, false, 0
 local lastSound, lastLevel = -10, 0
 local frame = CreateFrame('Frame')
@@ -14,11 +14,11 @@ local function say(text)
     DEFAULT_CHAT_FRAME:AddMessage('|cff80dfffPetThreat:|r ' .. text)
 end
 local function hideAll()
-    for _, entry in pairs(plates) do if entry.label then entry.label:Hide() end end
+    for _, entry in pairs(plates) do entry.smooth = nil; if entry.label then entry.label:Hide() end end
     banner:Hide()
     lastLevel = 0
 end
-local function read(unit)
+local function read(unit, grouped)
     if call(UnitExists, unit) ~= true or call(UnitIsDeadOrGhost, unit) == true then return nil, 0 end
     if call(UnitCanAttack, 'player', unit) ~= true or call(UnitIsPlayer, unit) == true then return nil, 0 end
     -- Some client/nameplate combinations provide better data through target.
@@ -32,10 +32,14 @@ local function read(unit)
     if pt == nil then pt = call(UnitIsUnit, unit .. 'target', 'player') end
     if ps == nil then ps = call(UnitThreatSituation, 'player', unit) end
     if pt == nil and type(ps) == 'number' then pt = ps >= 2 end
-    if petTank == nil and pt == nil then return 'Threat unavailable', 0 end
-    return A.Classify(pt, ps, percent, petTank, petThreat, db.warn)
+    if not grouped and petTank == nil and pt == nil then return 'Waiting for threat', 0 end
+    return A.Classify(pt, ps, percent, petTank, petThreat, db.warn, grouped)
 end
-local function draw(entry, unit, text, level)
+local function draw(entry, unit, text, level, percent)
+    local displayed = A.SmoothPercent(entry, percent, level, GetTime())
+    if displayed then
+        text = string.format('%.1f%% %s', math.floor(displayed * 10) / 10, level == 1 and 'EASE OFF' or 'threat')
+    end
     if not text then if entry.label then entry.label:Hide() end return end
     local plate = call(C_NamePlate and C_NamePlate.GetNamePlateForUnit, unit)
     if not plate or (plate.IsForbidden and plate:IsForbidden()) then
@@ -63,42 +67,44 @@ local function draw(entry, unit, text, level)
     label:SetFont(STANDARD_TEXT_FONT or 'Fonts\\FRIZQT__.TTF', db.size, 'OUTLINE')
     label:SetText(text)
     local restrictedDisplay = false
-    if text == 'Threat unavailable' or text == 'Pet tanking - no %' then
+    if text == 'Waiting for threat' or text == 'Pet tanking - no %' then
         restrictedDisplay = A.DisplayRestrictedPercent(label, unit)
         if not restrictedDisplay then label:SetText(text) end
     end
     if level == 2 then label:SetTextColor(1, 0.2, 0.2)
     elseif level == 1 then label:SetTextColor(1, 0.65, 0.1)
     elseif restrictedDisplay then label:SetTextColor(0.55, 0.8, 1)
-    elseif text == 'Threat unavailable' or text == 'Pet tanking - no %' then label:SetTextColor(0.7, 0.7, 0.7)
+    elseif text == 'Waiting for threat' or text == 'Pet tanking - no %' then label:SetTextColor(0.7, 0.7, 0.7)
     else label:SetTextColor(0.4, 1, 0.4) end
     label:Show()
 end
 local function update()
     if not ready then return end
+    A.LatencyPoll()
     local now = GetTime()
     if demoUntil > now then
         banner.text:SetText('PREVIEW: 85% - EASE OFF')
         banner.text:SetTextColor(1, 0.65, 0.1)
-        banner:Show()
+        if db.screenWarning then banner:Show() else banner:Hide() end
         for unit, entry in pairs(plates) do pcall(draw, entry, unit, '85% EASE OFF', 1) end
         return
     end
-    if not db.enabled or call(UnitExists, 'pet') ~= true or call(UnitIsDeadOrGhost, 'pet') == true then hideAll(); return end
+    local grouped = call(IsInGroup) == true or call(IsInRaid) == true
+    if not db.enabled or (not grouped and (call(UnitExists, 'pet') ~= true or call(UnitIsDeadOrGhost, 'pet') == true)) then hideAll(); return end
     local highest = 0
     for unit, entry in pairs(plates) do
-        local text, level = read(unit)
-        local ok = pcall(draw, entry, unit, text, level)
+        local text, level, percent = read(unit, grouped)
+        local ok = pcall(draw, entry, unit, text, level, percent)
         if not ok and entry.label then entry.label:Hide() end
         highest = math.max(highest, level)
     end
     -- Still warn about the current target when its nameplate is out of range.
-    local _, targetLevel = read('target')
+    local _, targetLevel = read('target', grouped)
     highest = math.max(highest, targetLevel)
     if highest > 0 then
-        banner.text:SetText(highest == 2 and 'AGGRO ON YOU' or 'EASE OFF - your pet may lose aggro')
+        banner.text:SetText(highest == 2 and 'AGGRO ON YOU' or (grouped and 'EASE OFF - you may pull aggro' or 'EASE OFF - your pet may lose aggro'))
         banner.text:SetTextColor(1, highest == 2 and 0.2 or 0.65, 0.1)
-        banner:Show()
+        if db.screenWarning then banner:Show() else banner:Hide() end
         if db.sound and highest > lastLevel and now - lastSound >= 3 then
             call(PlaySound, SOUNDKIT and SOUNDKIT.RAID_WARNING or 8959, 'Master')
             lastSound = now
@@ -109,8 +115,12 @@ end
 local function slash(message)
     local command, value = message:lower():match('^%s*(%S*)%s*(.-)%s*$')
     local n = tonumber(value)
-    if command == 'debug' then
-        say('v0.3.2 | Build: ' .. A.Describe(GetBuildInfo))
+    if command == 'latency' then
+        A.LatencyCommand(value, frame, say)
+        return
+    elseif command == 'debug' then
+        say('v0.3.10 | Build: ' .. A.Describe(GetBuildInfo))
+        say('Group / raid: ' .. A.Describe(IsInGroup) .. ' / ' .. A.Describe(IsInRaid))
         say('Target player [tanking,status,scaled%,raw%,threat]: ' .. A.Describe(UnitDetailedThreatSituation, 'player', 'target'))
         say('Target pet: ' .. A.Describe(UnitDetailedThreatSituation, 'pet', 'target'))
         say('Status player / pet: ' .. A.Describe(UnitThreatSituation, 'player', 'target') .. ' / ' .. A.Describe(UnitThreatSituation, 'pet', 'target'))
@@ -127,20 +137,24 @@ local function slash(message)
     elseif command == 'warn' and n and n >= 50 and n <= 99 then db.warn = math.floor(n)
     elseif command == 'gap' and n and n >= 0 and n <= 60 then db.gap = math.floor(n)
     elseif command == 'size' and n and n >= 8 and n <= 30 then db.size = math.floor(n)
+    elseif command == 'screenwarning' and (value == 'on' or value == 'off') then db.screenWarning = value == 'on'
     elseif command == 'sound' and (value == 'on' or value == 'off') then db.sound = value == 'on'
     elseif command == 'on' or command == 'off' then db.enabled = command == 'on'; demoUntil = 0
     elseif command == 'test' then demoUntil = GetTime() + 8
     elseif command == 'reset' then for k, v in pairs(defaults) do db[k] = v end
     else
-        say('/petthreat above | below | warn 85 | sound on/off | gap 4 | size 13 | test | on/off | reset')
+        say('/petthreat above | below | warn 85 | sound on/off | screenwarning on/off | gap 4 | size 13 | test | on/off | reset')
         say('Current: ' .. db.position .. ', warning ' .. db.warn .. '%, sound ' .. (db.sound and 'on' or 'off'))
+        say('/petthreat latency on | off | report: measure hit-to-threat timing')
         return
     end
     update()
     if A.RefreshSettings then A.RefreshSettings() end
     say('Updated. /petthreat for settings.')
 end
-frame:SetScript('OnEvent', function(_, event, unit)
+frame:SetScript('OnEvent', function(_, event, unit, ...)
+    if event == 'COMBAT_LOG_EVENT_UNFILTERED' then A.LatencyHit(); return end
+    if event == 'UNIT_COMBAT' then A.LatencyUnitCombat(unit, ...); return end
     if event == 'PLAYER_LOGIN' then
         local _, _, _, interface = GetBuildInfo()
         -- Forever uses interface 160xx, even on builds sharing Mainline architecture.
@@ -166,7 +180,7 @@ frame:SetScript('OnEvent', function(_, event, unit)
             else slash(message) end
         end
         if A.CreateSettings then A.CreateSettings() end
-        for _, e in ipairs({'NAME_PLATE_UNIT_ADDED', 'NAME_PLATE_UNIT_REMOVED', 'UNIT_THREAT_LIST_UPDATE', 'UNIT_THREAT_SITUATION_UPDATE', 'UNIT_PET', 'PLAYER_TARGET_CHANGED', 'PLAYER_ENTERING_WORLD'}) do pcall(frame.RegisterEvent, frame, e) end
+        for _, e in ipairs({'NAME_PLATE_UNIT_ADDED', 'NAME_PLATE_UNIT_REMOVED', 'UNIT_THREAT_LIST_UPDATE', 'UNIT_THREAT_SITUATION_UPDATE', 'UNIT_PET', 'PLAYER_TARGET_CHANGED', 'PLAYER_ENTERING_WORLD', 'GROUP_ROSTER_UPDATE'}) do pcall(frame.RegisterEvent, frame, e) end
         if C_NamePlate and C_NamePlate.GetNamePlates then
             for _, plate in ipairs(C_NamePlate.GetNamePlates()) do
                 local token = call(function() return plate.namePlateUnitToken end)
@@ -178,7 +192,7 @@ frame:SetScript('OnEvent', function(_, event, unit)
     elseif event == 'NAME_PLATE_UNIT_REMOVED' then
         if plates[unit] and plates[unit].label then plates[unit].label:Hide() end
         plates[unit] = nil
-    elseif event == 'PLAYER_ENTERING_WORLD' then hideAll()
+    elseif event == 'PLAYER_ENTERING_WORLD' or event == 'GROUP_ROSTER_UPDATE' or event == 'UNIT_PET' then hideAll()
     end
     update()
 end)

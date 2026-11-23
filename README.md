@@ -32,3 +32,15 @@ Offline Lua 5.1 checks cover threat classification, restricted-data handling, ta
 
 ## 0.3.2 Beta
 Non-selected nameplates can now pass protected threat percentages directly to the game text renderer where supported. Blue percentages are display-only: protected values cannot be used for numerical warning thresholds. Missing data still uses the grey fallback. Offline regression checks pass; this change still needs in-game multi-target verification.
+
+## 0.3.10 Beta
+## Changes since 0.3.2
+- Party/raid threat display no longer requires your pet to tank; works with a dismissed or dead pet.
+- Rising readable threat displays immediately when received. Only falling non-warning values are smoothed over 0.1 seconds.
+- Center-screen warnings are now off by default, with an optional settings checkbox. Nameplate warnings and sound remain independent.
+- Dark blue-grey settings with teal accents, matching WhatsNext/Crossroads. Plus/minus controls are retained.
+- Missing-data text now reads Waiting for threat.
+- Optional 30-second timing diagnostics: /petthreat latency on, off, report. Uses target-damage events as a labeled fallback when the combat log is unavailable.
+
+## Validation and limitations
+Offline Lua 5.1 regression tests passed. The updated settings appearance was reviewed in-game by the author. Cross-client coverage remains beta. Protected blue percentages are display-only and cannot drive numerical warning thresholds. Missing threat data is not zero threat. The addon cannot accelerate delayed game data; fallback timing includes damage from any attacker and is not a direct server-latency measurement. Retail is not supported.

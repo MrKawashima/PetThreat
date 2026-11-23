@@ -58,16 +58,37 @@ function A.Threat(actor, unit)
     end
     return tank, status, percent, raw, amount
 end
-function A.Classify(playerTank, status, percent, petTank, petThreat, threshold)
-    if playerTank == true and (petTank == true or (type(petThreat) == 'number' and petThreat > 0)) then
+function A.Classify(playerTank, status, percent, petTank, petThreat, threshold, grouped)
+    if playerTank == true and (grouped or petTank == true or (type(petThreat) == 'number' and petThreat > 0)) then
         return 'AGGRO ON YOU', 2
     end
-    if petTank ~= true then return nil, 0 end
+    if petTank ~= true and not grouped then return nil, 0 end
     if type(percent) == 'number' and percent == percent and percent >= 0 and percent < math.huge then
         local warning = percent >= threshold
-        return string.format('%.1f%% %s', math.floor(percent * 10) / 10, warning and 'EASE OFF' or 'threat'), warning and 1 or 0
+        return string.format('%.1f%% %s', math.floor(percent * 10) / 10, warning and 'EASE OFF' or 'threat'), warning and 1 or 0, percent
     end
     if status == 1 then return 'EASE OFF', 1 end
-    if status == 0 then return 'Pet tanking - no %', 0 end
-    return 'Threat unavailable', 0
+    if status == 0 and petTank == true then return 'Pet tanking - no %', 0 end
+    return 'Waiting for threat', 0
+end
+
+-- Presentation only. Warning decisions always use the latest unsmoothed value.
+-- Each nameplate owns its state; missing/protected data clears it immediately.
+function A.SmoothPercent(entry, percent, level, now)
+    if type(percent) ~= 'number' or percent ~= percent or percent < 0 or percent == math.huge then
+        entry.smooth = nil
+        return nil
+    end
+    local s = entry.smooth
+    -- Never delay rising threat, including a rise during a downward transition.
+    if not s or percent > s.target or s.level ~= level or level > 0 or now < s.time then
+        entry.smooth = {value = percent, target = percent, start = percent, time = now, level = level}
+        return percent
+    end
+    local progress = math.min(1, (now - s.time) / 0.1)
+    s.value = s.start + (s.target - s.start) * progress
+    if percent ~= s.target then
+        s.start, s.target, s.time = s.value, percent, now
+    end
+    return s.value
 end

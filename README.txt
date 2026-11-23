@@ -1,4 +1,4 @@
-PetThreat 0.3.2 beta
+PetThreat 0.3.10 beta
 
 A small hunter-only addon. Simple settings window and minimap button; no libraries
 or damage meter.
@@ -9,8 +9,11 @@ The final path must be Interface/AddOns/PetThreat/PetThreat.toc.
 Repeat for each client you use. Log in on your hunter and enable enemy nameplates (V).
 
 DISPLAY
-Below the enemy health bar by default. Only tracks enemies your pet tanks, or
-enemies you tank where your pet has threat. Unrelated group-tanked enemies stay quiet.
+Below the enemy health bar by default. Solo: tracks enemies your pet tanks, or
+enemies you tank where your pet has threat. In a party or raid, displays your
+threat even when another player tanks, including when your pet is absent or dead.
+Group warnings use the game's aggro-pull threshold, not a player-to-pet ratio.
+Protected percentages remain display-only; missing data is shown in grey.
 Green: your current percentage of the aggro-pull threshold.
 Orange at 85%: EASE OFF, with a screen warning and a short sound.
 Red: AGGRO ON YOU. Missing/hidden data is never presented as 0% or safe.
@@ -75,7 +78,7 @@ This is an initial beta: offline Lua checks are not in-game verification on ever
 client. Older/newer patches may need Load out of date AddOns or a TOC update.
 Forever can hide threat/identity data, particularly in instances. The addon uses
 readable threat state when possible; it cannot provide percentage-based advance
-warnings when those values are hidden. It shows Threat unavailable where possible.
+warnings when those values are hidden. It shows Waiting for threat where possible.
 Designed for Blizzard nameplates. Replacement nameplate addons need in-game testing;
 their healthbar layout can require an offset adjustment or may not be supported.
 Only visible enemy nameplates can carry text. Your current target is checked for
@@ -88,3 +91,67 @@ IN-GAME CHECK
 4. Stop attacking: confirm the warning clears as your pet gains threat.
 5. Confirm red text when you have aggro, and hiding when your pet dies/is dismissed.
 6. Repeat on each client. Record client version and any Lua error if reporting a bug.
+
+0.3.3 BETA
+Fixed group visibility: party/raid threat no longer requires your pet to tank or
+have threat. Group display also works with a dismissed/dead pet. Group warnings
+use neutral wording, and joining/leaving groups refreshes the display immediately.
+Offline Lua 5.1 regression tests pass; party/raid behavior needs in-game testing.
+
+0.3.4 BETA
+Readable, non-warning percentages now transition over 0.2 seconds per nameplate.
+Warning thresholds and aggro alerts still use the newest unsmoothed data. Warning
+values and recovery from warnings display immediately. Missing or protected data
+clears smoothing; blue protected percentages remain direct display and may jump.
+This improves presentation, not the accuracy of the game data. In-game testing
+is still needed. Group support from 0.3.3 is included.
+
+0.3.5 BETA
+Rising readable threat now displays immediately on the next threat update, even
+during a downward transition. Only falling non-warning values are smoothed, over
+0.1 seconds. Warning and aggro handling remain immediate. This removes added
+rise animation delay; it cannot accelerate game/server threat updates.
+
+0.3.6 BETA - DELAY MEASUREMENT
+/petthreat latency on      Start a 30-second measurement (off by default).
+/petthreat latency off     Stop early and print the summary.
+/petthreat latency report  Print the last summary, saved per character.
+Keep one target and fire single direct-damage shots at least 3 seconds apart.
+The timer measures local combat-log damage-event receipt to the first observed
+change in the target's readable, unsmoothed scaled threat percentage. It does
+not measure projectile animation timing, network latency, or server latency.
+Pet/other threat changes, event ordering, and data batching may affect results.
+Sampling uses the normal 50-ms poll plus threat events, subject to frame time.
+Overlapping hits are excluded. Target changes, hidden/missing values and hits
+without a change within two seconds are not treated as successful samples.
+A zero-ms sample means the changed value was already available at the hit event.
+Protected values cannot be compared. Restricted/missing combat-log APIs are
+reported instead of fabricating a measurement. Damage-over-time ticks excluded.
+Results print in chat; the final summary is retained in PetThreatDB.
+
+0.3.7 BETA - FOREVER DIAGNOSTIC FALLBACK
+When the combat log API is missing, restricted, or rejects event registration,
+latency on tries UNIT_COMBAT target WOUND events. The reason is printed.
+This mode measures target damage events from ANY attacker (including your pet,
+other players and periodic damage); it cannot identify your own shots. Reports
+label this explicitly. The damage amount is never read. Protected threat or
+identity data can still prevent timing. If no samples arrive, this is reported
+as unavailable timing, never zero latency. The fallback needs in-game testing.
+Use the same /petthreat latency on | off | report commands.
+Reference: Blizzard UnitDocumentation.lua (Forever), UNIT_COMBAT event payload.
+
+0.3.8 BETA
+Center-screen warnings are off by default, including on upgrade. Enable them
+with Show center-screen warning in settings or /petthreat screenwarning on.
+The nameplate percentage/warnings and warning sound are independent of this
+setting. Test display respects the checkbox. Reset settings turns it off.
+
+0.3.9 BETA
+Missing threat data now displays Waiting for threat instead of Threat unavailable.
+The neutral grey label does not imply zero threat or promise that attacking will
+unlock data. Protected percentage display and warning behavior are unchanged.
+
+0.3.10 BETA
+Settings restyled to match WhatsNext/Crossroads: dark blue-grey panels, thin
+borders, teal accents, hover states and selected placement buttons. Plus/minus
+controls are retained for warning percentage, font size and distance. No slider.
