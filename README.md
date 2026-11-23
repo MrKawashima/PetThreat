@@ -1,46 +1,37 @@
-![PetThreat — Know when to ease off.](media/banner.png)
+# PetThreat 1.0
 
-# PetThreat
+![PetThreat](https://raw.githubusercontent.com/MrKawashima/PetThreat/main/media/banner.png)
 
-A small hunter addon that shows your threat above or below enemy nameplates and warns before you pull aggro from your pet.
+Lightweight hunter threat information above or below enemy nameplates, with configurable early warnings, a simple settings window and a round minimap button.
 
-## Install
-Download the ZIP from Releases. Extract the PetThreat folder into your client's Interface/AddOns folder. Enable enemy nameplates with V. Click the minimap button or use /petthreat for settings.
+## Known limitations - please read
+- Threat percentages are not always available, including on the selected target or additional enemies. Grey **Waiting for threat** means missing data, not 0% or safety. Attacking does not guarantee that data becomes available.
+- Blue percentages are protected game values shown directly. They cannot be used for numerical early-warning calculations. Blue does not mean safe.
+- Threat updates can arrive after a hit. The addon cannot make the game provide data sooner. Warnings are advisory and cannot guarantee that you will avoid pulling aggro.
+- Multiple visible nameplates are supported, but reliable percentages and advance warnings for every enemy are not guaranteed.
+- In-game observations are from WoW Forever. The listed Classic clients are targeted by the code, not all verified in-game. Replacement nameplate addons may need adjustments. Retail and old/private-server executables are not supported.
+- Optional timing diagnostics measure observed event-to-threat changes, not network/server latency. The fallback includes damage from any attacker, including your pet.
 
 ## Features
-- One-decimal threat percentage, checked at 20 Hz plus threat events.
-- Adjustable early warning threshold (85% default), visual warning and optional sound.
-- Above/below placement, text size and spacing controls.
-- WoW-style settings window, sample preview and round movable minimap button.
-- No external addon dependencies. Retail is disabled.
+- Solo pet threat and party/raid threat, including groups with a dismissed or dead pet.
+- Percentage above/below health bars; adjustable font size and spacing.
+- Warning threshold 50-99%, default 85%, adjusted with plus/minus controls.
+- Optional warning sound. Center-screen warning is off by default and can be enabled separately.
+- Dark blue-grey settings, teal accents, live preview and movable round minimap button.
+- Rising readable values display immediately when received; falling non-warning values smooth over 0.1 seconds.
+- No external addon dependencies. Settings saved per character.
 
-## Beta status and limitations
-Percentage display and visual early warnings have been observed in-game on the user's Forever client. Other Classic clients remain unverified in-game. The code targets modern Era/Hardcore/SoD, TBC Anniversary, Wrath/Titan Reforged, Cataclysm, Mists and Forever clients; this is not a claim that every client has been tested.
+## Install and settings
+Extract the PetThreat folder into your client's Interface/AddOns folder. Enable enemy nameplates with V. Reload the UI after updating.
+Open settings with /petthreat or the minimap button. Right-click the minimap button to toggle sound; drag it to move it.
 
-Non-selected enemies may lack readable threat percentages. PetThreat tries matching target, pet target, focus and mouseover aliases; it does not display stale cached values as live data. If the game hides or omits threat data, a numerical early warning cannot be calculated. Grey text indicates unavailable data.
-
-100% represents the game's aggro-pull threshold, not simply equality with your pet's raw threat. Polling faster cannot increase server data accuracy. The addon never stops your attacks or controls your pet.
+100% refers to the game's scaled aggro-pull threshold, not simply equal raw threat to your pet. The addon never stops your attacks or controls your pet.
 
 ## Troubleshooting
-Use /petthreat debug during combat and report the output with your client version. See README.txt for all commands.
+Use /petthreat debug for build and threat-data diagnostics.
+Use /petthreat latency on for a 30-second timing session, off to stop early, and report to show the last summary.
 
-## Validation
-Offline Lua 5.1 checks cover threat classification, restricted-data handling, target aliases, client gates, settings, update interval and minimap controls. In-game multi-target and cross-client testing is still needed.
+## Release 1.0.0
+This release promotes the 0.3.10 feature set to 1.0 with the limitations above explicitly documented; it does not claim to fix unavailable or delayed game data. Offline Lua 5.1 regression checks passed. See README.txt for command details and change history.
 
-## CurseForge
-[PetThreat on CurseForge](https://www.curseforge.com/wow/addons/petthreat) (new project; availability depends on moderation approval).
-
-## 0.3.2 Beta
-Non-selected nameplates can now pass protected threat percentages directly to the game text renderer where supported. Blue percentages are display-only: protected values cannot be used for numerical warning thresholds. Missing data still uses the grey fallback. Offline regression checks pass; this change still needs in-game multi-target verification.
-
-## 0.3.10 Beta
-## Changes since 0.3.2
-- Party/raid threat display no longer requires your pet to tank; works with a dismissed or dead pet.
-- Rising readable threat displays immediately when received. Only falling non-warning values are smoothed over 0.1 seconds.
-- Center-screen warnings are now off by default, with an optional settings checkbox. Nameplate warnings and sound remain independent.
-- Dark blue-grey settings with teal accents, matching WhatsNext/Crossroads. Plus/minus controls are retained.
-- Missing-data text now reads Waiting for threat.
-- Optional 30-second timing diagnostics: /petthreat latency on, off, report. Uses target-damage events as a labeled fallback when the combat log is unavailable.
-
-## Validation and limitations
-Offline Lua 5.1 regression tests passed. The updated settings appearance was reviewed in-game by the author. Cross-client coverage remains beta. Protected blue percentages are display-only and cannot drive numerical warning thresholds. Missing threat data is not zero threat. The addon cannot accelerate delayed game data; fallback timing includes damage from any attacker and is not a direct server-latency measurement. Retail is not supported.
+[Source and releases](https://github.com/MrKawashima/PetThreat)

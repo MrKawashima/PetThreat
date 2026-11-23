@@ -119,7 +119,7 @@ local function slash(message)
         A.LatencyCommand(value, frame, say)
         return
     elseif command == 'debug' then
-        say('v0.3.10 | Build: ' .. A.Describe(GetBuildInfo))
+        say('v1.0.0 | Build: ' .. A.Describe(GetBuildInfo))
         say('Group / raid: ' .. A.Describe(IsInGroup) .. ' / ' .. A.Describe(IsInRaid))
         say('Target player [tanking,status,scaled%,raw%,threat]: ' .. A.Describe(UnitDetailedThreatSituation, 'player', 'target'))
         say('Target pet: ' .. A.Describe(UnitDetailedThreatSituation, 'pet', 'target'))

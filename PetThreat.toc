@@ -2,7 +2,7 @@
 ## Title: PetThreat
 ## Notes: Simple hunter pet threat on enemy nameplates. /petthreat
 ## Author: Markus
-## Version: 0.3.10-beta
+## Version: 1.0.0
 ## SavedVariablesPerCharacter: PetThreatDB
 Core.lua
 Latency.lua

@@ -1,4 +1,10 @@
-PetThreat 0.3.10 beta
+PetThreat 1.0.0
+
+KNOWN LIMITATIONS
+Percentages can be missing even on the selected target. Waiting for threat is
+not zero threat. Blue protected percentages cannot drive numerical warnings.
+Game data can be delayed; warnings cannot guarantee avoiding aggro. Multi-target
+reliability and all-client compatibility are not fully verified in-game.
 
 A small hunter-only addon. Simple settings window and minimap button; no libraries
 or damage meter.
@@ -15,7 +21,7 @@ threat even when another player tanks, including when your pet is absent or dead
 Group warnings use the game's aggro-pull threshold, not a player-to-pet ratio.
 Protected percentages remain display-only; missing data is shown in grey.
 Green: your current percentage of the aggro-pull threshold.
-Orange at 85%: EASE OFF, with a screen warning and a short sound.
+Orange at 85%: EASE OFF, with optional sound and optional screen warning (off by default).
 Red: AGGRO ON YOU. Missing/hidden data is never presented as 0% or safe.
 100% means reaching the game's scaled pull threshold, NOT matching your pet's raw
 threat. The game's scaling accounts for melee/ranged pull thresholds.
@@ -74,7 +80,7 @@ COMPATIBILITY AND LIMITS
 Targets Blizzard's modern Classic clients: Era/Hardcore/SoD, TBC Anniversary,
 Wrath/Titan Reforged, Cataclysm, Mists and Forever. Retail is disabled explicitly.
 Original 2004-2012 executables and private-server forks are not supported.
-This is an initial beta: offline Lua checks are not in-game verification on every
+Offline Lua checks are not in-game verification on every
 client. Older/newer patches may need Load out of date AddOns or a TOC update.
 Forever can hide threat/identity data, particularly in instances. The addon uses
 readable threat state when possible; it cannot provide percentage-based advance
@@ -155,3 +161,6 @@ unlock data. Protected percentage display and warning behavior are unchanged.
 Settings restyled to match WhatsNext/Crossroads: dark blue-grey panels, thin
 borders, teal accents, hover states and selected placement buttons. Plus/minus
 controls are retained for warning percentage, font size and distance. No slider.
+
+1.0.0 RELEASE
+Promotes 0.3.10 with explicit known limitations. No threat-data behavior changes.
