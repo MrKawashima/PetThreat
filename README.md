@@ -1,8 +1,8 @@
-# PetThreat 1.0
+# PetThreat 1.0.1
 
 ![PetThreat](https://raw.githubusercontent.com/MrKawashima/PetThreat/main/media/banner.png)
 
-Lightweight hunter threat information above or below enemy nameplates, with configurable early warnings, a simple settings window and a round minimap button.
+Lightweight pet threat information for both hunters and warlocks above or below enemy nameplates, with configurable early warnings, a simple settings window and a round minimap button.
 
 ## Known limitations - please read
 - Threat percentages are not always available, including on the selected target or additional enemies. Grey **Waiting for threat** means missing data, not 0% or safety. Attacking does not guarantee that data becomes available.
@@ -31,7 +31,7 @@ Open settings with /petthreat or the minimap button. Right-click the minimap but
 Use /petthreat debug for build and threat-data diagnostics.
 Use /petthreat latency on for a 30-second timing session, off to stop early, and report to show the last summary.
 
-## Release 1.0.0
-This release promotes the 0.3.10 feature set to 1.0 with the limitations above explicitly documented; it does not claim to fix unavailable or delayed game data. Offline Lua 5.1 regression checks passed. See README.txt for command details and change history.
+## Release 1.0.1
+Version 1.0.1 enables Warlock alongside Hunter and updates the class descriptions. The limitations above still apply; this does not fix unavailable or delayed game data. Warlock class gating was tested offline; behavior across all clients and pets has not been independently verified in-game. Offline Lua 5.1 regression checks passed. See README.txt for command details and change history.
 
 [Source and releases](https://github.com/MrKawashima/PetThreat)

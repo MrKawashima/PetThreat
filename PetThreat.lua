@@ -119,7 +119,7 @@ local function slash(message)
         A.LatencyCommand(value, frame, say)
         return
     elseif command == 'debug' then
-        say('v1.0.0 | Build: ' .. A.Describe(GetBuildInfo))
+        say('v1.0.1 | Build: ' .. A.Describe(GetBuildInfo))
         say('Group / raid: ' .. A.Describe(IsInGroup) .. ' / ' .. A.Describe(IsInRaid))
         say('Target player [tanking,status,scaled%,raw%,threat]: ' .. A.Describe(UnitDetailedThreatSituation, 'player', 'target'))
         say('Target pet: ' .. A.Describe(UnitDetailedThreatSituation, 'pet', 'target'))
@@ -163,7 +163,7 @@ frame:SetScript('OnEvent', function(_, event, unit, ...)
             say('Retail is not supported.'); frame:UnregisterAllEvents(); frame:SetScript('OnUpdate', nil); return
         end
         local _, class = UnitClass('player')
-        if class ~= 'HUNTER' then frame:UnregisterAllEvents(); frame:SetScript('OnUpdate', nil); return end
+        if class ~= 'HUNTER' and class ~= 'WARLOCK' then frame:UnregisterAllEvents(); frame:SetScript('OnUpdate', nil); return end
         PetThreatDB = type(PetThreatDB) == 'table' and PetThreatDB or {}
         db = PetThreatDB
         for k, v in pairs(defaults) do if type(db[k]) ~= type(v) then db[k] = v end end

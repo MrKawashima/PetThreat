@@ -130,7 +130,7 @@ function A.CreateSettings()
     fill(panel, 1, -1, 458, 3, 0.38, 0.85, 0.69)
     roundIcon(panel, 38, 25, -24)
     text(panel, 'PetThreat', 76, -25, 'GameFontNormalLarge'):SetTextColor(0.38, 0.85, 0.69)
-    text(panel, 'HUNTER COMPANION', 77, -48, 'GameFontHighlightSmall'):SetTextColor(0.65, 0.75, 0.80)
+    text(panel, 'HUNTER & WARLOCK COMPANION', 77, -48, 'GameFontHighlightSmall'):SetTextColor(0.65, 0.75, 0.80)
     button(panel, 'X', 414, -16, 28, function() panel:Hide() end)
     UISpecialFrames[#UISpecialFrames + 1] = 'PetThreatSettings'
     bordered(panel, 420, 160, 20, -78)

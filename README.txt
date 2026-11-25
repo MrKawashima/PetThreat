@@ -1,4 +1,4 @@
-PetThreat 1.0.0
+PetThreat 1.0.1
 
 KNOWN LIMITATIONS
 Percentages can be missing even on the selected target. Waiting for threat is
@@ -6,13 +6,13 @@ not zero threat. Blue protected percentages cannot drive numerical warnings.
 Game data can be delayed; warnings cannot guarantee avoiding aggro. Multi-target
 reliability and all-client compatibility are not fully verified in-game.
 
-A small hunter-only addon. Simple settings window and minimap button; no libraries
+A small addon for hunters and warlocks. Simple settings window and minimap button; no libraries
 or damage meter.
 
 INSTALL
 Close WoW. Extract the PetThreat folder into the selected client's Interface/AddOns.
 The final path must be Interface/AddOns/PetThreat/PetThreat.toc.
-Repeat for each client you use. Log in on your hunter and enable enemy nameplates (V).
+Repeat for each client you use. Log in on your hunter or warlock and enable enemy nameplates (V).
 
 DISPLAY
 Below the enemy health bar by default. Solo: tracks enemies your pet tanks, or
@@ -164,3 +164,8 @@ controls are retained for warning percentage, font size and distance. No slider.
 
 1.0.0 RELEASE
 Promotes 0.3.10 with explicit known limitations. No threat-data behavior changes.
+
+1.0.1 RELEASE
+Enables Warlock alongside Hunter. Updated class descriptions and settings heading.
+Existing threat-data limitations still apply. Warlock class gating tested offline;
+in-game behavior across all clients and pets is not independently verified.
