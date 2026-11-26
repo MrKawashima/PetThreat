@@ -1,4 +1,4 @@
-# PetThreat 1.0.1
+# PetThreat 1.0.2
 
 ![PetThreat](https://raw.githubusercontent.com/MrKawashima/PetThreat/main/media/banner.png)
 
@@ -31,7 +31,15 @@ Open settings with /petthreat or the minimap button. Right-click the minimap but
 Use /petthreat debug for build and threat-data diagnostics.
 Use /petthreat latency on for a 30-second timing session, off to stop early, and report to show the last summary.
 
-## Release 1.0.1
-Version 1.0.1 enables Warlock alongside Hunter and updates the class descriptions. The limitations above still apply; this does not fix unavailable or delayed game data. Warlock class gating was tested offline; behavior across all clients and pets has not been independently verified in-game. Offline Lua 5.1 regression checks passed. See README.txt for command details and change history.
+## Release 1.0.2
+
+- Hide threat labels on enemies reported out of combat, including stale values after a combat reset.
+- Missing or restricted data alone no longer enables "Waiting for threat" on every visible enemy, including while grouped.
+- Clear labels and preview on death; refresh after resurrection and leaving combat.
+- Hunter and Warlock support remains enabled. Retail remains unsupported.
+
+Validation: offline Lua 5.1 regression tests passed, including idle/unknown enemies, death and resurrection, class/client gates, settings and threat display. This fix has not yet been verified in-game across all clients.
+
+Known limitations remain: threat data may be missing or delayed; blue protected percentages are display-only and cannot drive numerical warnings. Warnings cannot guarantee avoiding aggro. See the project description and bundled README for details.
 
 [Source and releases](https://github.com/MrKawashima/PetThreat)

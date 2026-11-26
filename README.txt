@@ -1,4 +1,4 @@
-PetThreat 1.0.1
+PetThreat 1.0.2
 
 KNOWN LIMITATIONS
 Percentages can be missing even on the selected target. Waiting for threat is
@@ -169,3 +169,8 @@ Promotes 0.3.10 with explicit known limitations. No threat-data behavior changes
 Enables Warlock alongside Hunter. Updated class descriptions and settings heading.
 Existing threat-data limitations still apply. Warlock class gating tested offline;
 in-game behavior across all clients and pets is not independently verified.
+
+1.0.2 FIX
+Hide threat labels on enemies reported out of combat. Missing/restricted data
+alone no longer enables labels. Clear labels and preview on death, and refresh
+after resurrection and combat reset. Existing threat-data limitations still apply.

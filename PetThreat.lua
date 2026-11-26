@@ -23,6 +23,9 @@ local function read(unit, grouped)
     if call(UnitCanAttack, 'player', unit) ~= true or call(UnitIsPlayer, unit) == true then return nil, 0 end
     -- Some client/nameplate combinations provide better data through target.
     if unit ~= 'target' and call(UnitIsUnit, unit, 'target') == true then unit = 'target' end
+    local inCombat = call(UnitAffectingCombat, unit)
+    -- Idle enemies must not inherit missing-data labels or stale threat after a reset.
+    if inCombat == false then return nil, 0 end
     local pt, ps, percent = A.Threat('player', unit)
     local petTank, petStatus, _, _, petThreat = A.Threat('pet', unit)
     if petStatus == nil then petStatus = call(UnitThreatSituation, 'pet', unit) end
@@ -32,6 +35,10 @@ local function read(unit, grouped)
     if pt == nil then pt = call(UnitIsUnit, unit .. 'target', 'player') end
     if ps == nil then ps = call(UnitThreatSituation, 'player', unit) end
     if pt == nil and type(ps) == 'number' then pt = ps >= 2 end
+    -- Unknown data is not evidence that this enemy is engaged. In particular,
+    -- group membership alone must never enable labels on every visible mob.
+    if inCombat ~= true and pt ~= true and petTank ~= true and
+        ps == nil and petStatus == nil and type(percent) ~= 'number' then return nil, 0 end
     if not grouped and petTank == nil and pt == nil then return 'Waiting for threat', 0 end
     return A.Classify(pt, ps, percent, petTank, petThreat, db.warn, grouped)
 end
@@ -81,6 +88,7 @@ end
 local function update()
     if not ready then return end
     A.LatencyPoll()
+    if call(UnitIsDeadOrGhost, 'player') == true then demoUntil = 0; hideAll(); return end
     local now = GetTime()
     if demoUntil > now then
         banner.text:SetText('PREVIEW: 85% - EASE OFF')
@@ -119,7 +127,7 @@ local function slash(message)
         A.LatencyCommand(value, frame, say)
         return
     elseif command == 'debug' then
-        say('v1.0.1 | Build: ' .. A.Describe(GetBuildInfo))
+        say('v1.0.2 | Build: ' .. A.Describe(GetBuildInfo))
         say('Group / raid: ' .. A.Describe(IsInGroup) .. ' / ' .. A.Describe(IsInRaid))
         say('Target player [tanking,status,scaled%,raw%,threat]: ' .. A.Describe(UnitDetailedThreatSituation, 'player', 'target'))
         say('Target pet: ' .. A.Describe(UnitDetailedThreatSituation, 'pet', 'target'))
@@ -180,7 +188,7 @@ frame:SetScript('OnEvent', function(_, event, unit, ...)
             else slash(message) end
         end
         if A.CreateSettings then A.CreateSettings() end
-        for _, e in ipairs({'NAME_PLATE_UNIT_ADDED', 'NAME_PLATE_UNIT_REMOVED', 'UNIT_THREAT_LIST_UPDATE', 'UNIT_THREAT_SITUATION_UPDATE', 'UNIT_PET', 'PLAYER_TARGET_CHANGED', 'PLAYER_ENTERING_WORLD', 'GROUP_ROSTER_UPDATE'}) do pcall(frame.RegisterEvent, frame, e) end
+        for _, e in ipairs({'NAME_PLATE_UNIT_ADDED', 'NAME_PLATE_UNIT_REMOVED', 'UNIT_THREAT_LIST_UPDATE', 'UNIT_THREAT_SITUATION_UPDATE', 'UNIT_PET', 'PLAYER_TARGET_CHANGED', 'PLAYER_ENTERING_WORLD', 'GROUP_ROSTER_UPDATE', 'PLAYER_DEAD', 'PLAYER_ALIVE', 'PLAYER_UNGHOST', 'PLAYER_REGEN_ENABLED'}) do pcall(frame.RegisterEvent, frame, e) end
         if C_NamePlate and C_NamePlate.GetNamePlates then
             for _, plate in ipairs(C_NamePlate.GetNamePlates()) do
                 local token = call(function() return plate.namePlateUnitToken end)
@@ -192,7 +200,8 @@ frame:SetScript('OnEvent', function(_, event, unit, ...)
     elseif event == 'NAME_PLATE_UNIT_REMOVED' then
         if plates[unit] and plates[unit].label then plates[unit].label:Hide() end
         plates[unit] = nil
-    elseif event == 'PLAYER_ENTERING_WORLD' or event == 'GROUP_ROSTER_UPDATE' or event == 'UNIT_PET' then hideAll()
+    elseif event == 'PLAYER_DEAD' then demoUntil = 0; hideAll(); return
+    elseif event == 'PLAYER_ENTERING_WORLD' or event == 'GROUP_ROSTER_UPDATE' or event == 'UNIT_PET' or event == 'PLAYER_ALIVE' or event == 'PLAYER_UNGHOST' or event == 'PLAYER_REGEN_ENABLED' then hideAll()
     end
     update()
 end)
